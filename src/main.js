@@ -29,4 +29,9 @@ module.exports.loop = function () {
             console.log('Clearing non-existing creep memory:', name);
         }
     }
+
+    // visualization - flags
+    _.forEach(Game.flags, function (flag, name) {
+        flag.visualize();
+    });
 }

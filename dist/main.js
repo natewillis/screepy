@@ -78,6 +78,9 @@ module.exports.loop = function () {
             console.log('Clearing non-existing creep memory:', name);
         }
     }
+    _.forEach(Game.flags, function (flag, name) {
+        flag.visualize();
+    });
 }
 return module.exports;
 }
@@ -240,17 +243,48 @@ Flag.prototype.process = function () {
 
 
     } else {
-        this.memory.deleteMe = false;
-        let sources = this.pos.findInRange(FIND_SOURCES,0);
-        if (sources.length == 1) {
-            this.memory.type = 'source';
-            this.setColor(COLOR_YELLOW);
+        if (this.pos.roomName in Game.rooms) {
+            this.memory.deleteMe = false;
+            let sources = this.pos.findInRange(FIND_SOURCES,0);
+            if (sources.length == 1) {
+                this.memory.type = 'source';
+                this.setColor(COLOR_YELLOW);
+                source = sources[0];
+                this.memory.sourceId = source.id;
+                this.memory.harvestLocations = [];
+                let flag = this;
+                _.range(-1, 2).forEach(function(x) {
+                    _.range(-1, 2).forEach(function(y) {
+                        if (!((x == 0) && (y == 0))) {
+                            let checkPosition = new RoomPosition(source.pos.x+x, source.pos.y+y, source.pos.roomName);
+                            console.log(checkPosition);
+                            let terrain = source.room.getTerrain().get(checkPosition.x, checkPosition.y);
+                            if (terrain !== TERRAIN_MASK_WALL) {
+                                flag.memory.harvestLocations.push(checkPosition);
+                            }
+                        }
+                    });
+                });
+            }
+            this.memory.processed = true;
+            console.log('a flag named ' + this.name + ' and type ' + this.memory.type + ' was added');
+        } else {
+            this.memory.deleteMe = true;
+            console.log('a flag named ' + this.name + ' and type ' + this.memory.type + ' was deleted due to visibility');
+
         }
-        this.memory.processed = true;
-        console.log('a flag named ' + this.name + ' and type ' + this.memory.type + ' was added');
+
 
     }
 
+}
+
+Flag.prototype.visualize = function () {
+    if (this.memory.processed) {
+        _.forEach(this.memory.harvestLocations, function (pos) {
+            new RoomVisual(pos.roomName).circle(pos.x, pos.y, {fill: '#FFFF00', stroke: '#ffff00', radius: .15, opacity: 0.5});
+        });
+    }
 }
 return module.exports;
 }
