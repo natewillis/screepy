@@ -1,3 +1,5 @@
+const credentials = require('./credentials');
+
 let matchdep = require('matchdep');
 let mergeFiles = require('./grunt-scripts/mergeFiles');
 
@@ -7,12 +9,7 @@ module.exports = function (grunt) {
 
 	grunt.initConfig({
 		screeps: {
-			options: {
-				email:    '*****************',
-				password: '*****************',
-				branch:   'default',
-				ptr:      false,
-			},
+			options: credentials,
 			dist:    {
 				src: ['dist/*.js']
 			}
@@ -25,7 +22,7 @@ module.exports = function (grunt) {
 				filter:  'isFile',
 				cwd:     'dist/',
 				src:     '**',
-				dest:    'Update This Path'
+				dest:    'C:/Users/natew/AppData/Local/Screeps/scripts/127_0_0_1___21025/default'
 			},
 		},
 	});
@@ -35,4 +32,5 @@ module.exports = function (grunt) {
 	grunt.registerTask('merge', 'mergeFiles');
 	grunt.registerTask('write', 'screeps');
 	grunt.registerTask('write-private', 'copy');
+
 };
