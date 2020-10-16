@@ -4,23 +4,25 @@ let prototypes = require('./prototypes');
 
 
 module.exports.loop = function () {
-    // make a list of all of our rooms
-    Game.myRooms = _.filter(Game.rooms, r => r.controller && r.controller.level > 0 && r.controller.my);
 
-    // run spwan logic for each room in our empire
-    _.forEach(Game.myRooms, r => roomLogic.spawning(r));
-    
-    // run each creep role see /creeps/index.js
-    for(var name in Game.creeps) {
-        var creep = Game.creeps[name];
+    // process new user flags
+    _.forEach(Game.flags, function (flag, name) {
+        flag.process();
+    });
 
-        let role = creep.memory.role;
-        if (creepLogic[role]) {
-            creepLogic[role].run(creep);
+    // garbage collection - flags
+    _.forEach(Game.flags, function (flag, name) {
+        if (!('deleteMe' in flag.memory)) flag.memory.deleteMe = true;
+        if (flag.memory.deleteMe) {
+            flag.remove();
         }
-    }
-
-    // free up memory if creep no longer exists
+    });
+    _.forEach(Memory.flags, function (flag, name) {
+        if (!Game.flags[name]) {
+            delete Memory.flags[name];
+            console.log('Clearing non-existing flag memory:', name);
+        }
+    });
     for(var name in Memory.creeps) {
         if(!Game.creeps[name]) {
             delete Memory.creeps[name];

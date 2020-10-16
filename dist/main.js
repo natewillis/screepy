@@ -57,16 +57,21 @@ let prototypes = __require(3,0);
 
 
 module.exports.loop = function () {
-    Game.myRooms = _.filter(Game.rooms, r => r.controller && r.controller.level > 0 && r.controller.my);
-    _.forEach(Game.myRooms, r => roomLogic.spawning(r));
-    for(var name in Game.creeps) {
-        var creep = Game.creeps[name];
-
-        let role = creep.memory.role;
-        if (creepLogic[role]) {
-            creepLogic[role].run(creep);
+    _.forEach(Game.flags, function (flag, name) {
+        flag.process();
+    });
+    _.forEach(Game.flags, function (flag, name) {
+        if (!('deleteMe' in flag.memory)) flag.memory.deleteMe = true;
+        if (flag.memory.deleteMe) {
+            flag.remove();
         }
-    }
+    });
+    _.forEach(Memory.flags, function (flag, name) {
+        if (!Game.flags[name]) {
+            delete Memory.flags[name];
+            console.log('Clearing non-existing flag memory:', name);
+        }
+    });
     for(var name in Memory.creeps) {
         if(!Game.creeps[name]) {
             delete Memory.creeps[name];
@@ -101,7 +106,8 @@ return module.exports;
 /********** Start module 3: C:\Users\natew\WebstormProjects\screepy\src\prototypes\index.js **********/
 __modules[3] = function(module, exports) {
 let files = {
-    creep: __require(7,3)
+    creep: __require(7,3),
+    flag: __require(8,3),
 }
 return module.exports;
 }
@@ -219,6 +225,36 @@ Creep.prototype.sayHello = function sayHello() {
 return module.exports;
 }
 /********** End of module 7: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
+/********** Start module 8: C:\Users\natew\WebstormProjects\screepy\src\prototypes\flag.js **********/
+__modules[8] = function(module, exports) {
+Flag.prototype.process = function () {
+    if (!('processed' in this.memory)) {
+        this.memory.processed = false;
+    }
+    if (this.memory.processed) {
+        if (!('deleteMe' in this.memory)) this.memory.deleteMe = true;
+        if (!('type' in this.memory)) this.memory.deleteMe = true;
+        if (this.memory.deleteMe) {
+            console.log('flag ' + this.name + ' has been marked for deletion');
+        }
+
+
+    } else {
+        this.memory.deleteMe = false;
+        let sources = this.pos.findInRange(FIND_SOURCES,0);
+        if (sources.length == 1) {
+            this.memory.type = 'source';
+            this.setColor(COLOR_YELLOW);
+        }
+        this.memory.processed = true;
+        console.log('a flag named ' + this.name + ' and type ' + this.memory.type + ' was added');
+
+    }
+
+}
+return module.exports;
+}
+/********** End of module 8: C:\Users\natew\WebstormProjects\screepy\src\prototypes\flag.js **********/
 /********** Footer **********/
 if(typeof module === "object")
 	module.exports = __require(0);
