@@ -1,4 +1,4 @@
 let files = {
     creep: require("./creep"),
-    flag: require("./flag"),
+    spawn: require("./spawn"),
 }

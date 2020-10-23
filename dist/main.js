@@ -54,12 +54,26 @@ __modules[0] = function(module, exports) {
 let creepLogic = __require(1,0);
 let roomLogic = __require(2,0);
 let prototypes = __require(3,0);
-
+let managerLogic = __require(4,0);
 
 module.exports.loop = function () {
+    let start = 0;
+    let end = 0;
+    start = Game.cpu.getUsed();
     _.forEach(Game.flags, function (flag, name) {
         flag.process();
     });
+    end = Game.cpu.getUsed();
+    console.log(`flag process: ${end-start} ticks`)
+    start = Game.cpu.getUsed();
+    let jobQueue = managerLogic.Manager.createJobQueue();
+    end = Game.cpu.getUsed();
+    console.log(`job queue process: ${end-start} ticks`)
+    start = Game.cpu.getUsed();
+    let spawnQueue = managerLogic.Manager.createSpawnQueue(jobQueue);
+    end = Game.cpu.getUsed();
+    console.log(`spawn queue process: ${end-start} ticks`)
+    start = Game.cpu.getUsed();
     _.forEach(Game.flags, function (flag, name) {
         if (!('deleteMe' in flag.memory)) flag.memory.deleteMe = true;
         if (flag.memory.deleteMe) {
@@ -78,9 +92,14 @@ module.exports.loop = function () {
             console.log('Clearing non-existing creep memory:', name);
         }
     }
+    end = Game.cpu.getUsed();
+    console.log(`garbage collection process: ${end-start} ticks`)
+    start = Game.cpu.getUsed();
     _.forEach(Game.flags, function (flag, name) {
         flag.visualize();
     });
+    end = Game.cpu.getUsed();
+    console.log(`visualization process: ${end-start} ticks`)
 }
 return module.exports;
 }
@@ -88,8 +107,8 @@ return module.exports;
 /********** Start module 1: C:\Users\natew\WebstormProjects\screepy\src\creeps\index.js **********/
 __modules[1] = function(module, exports) {
 let creepLogic = {
-    harvester:     __require(4,1),
-    upgrader:      __require(5,1),
+    harvester:     __require(5,1),
+    upgrader:      __require(6,1),
 }
 
 module.exports = creepLogic;
@@ -99,7 +118,7 @@ return module.exports;
 /********** Start module 2: C:\Users\natew\WebstormProjects\screepy\src\room\index.js **********/
 __modules[2] = function(module, exports) {
 let roomLogic = {
-    spawning:     __require(6,2),
+    spawning:     __require(7,2),
 }
 
 module.exports = roomLogic;
@@ -109,14 +128,26 @@ return module.exports;
 /********** Start module 3: C:\Users\natew\WebstormProjects\screepy\src\prototypes\index.js **********/
 __modules[3] = function(module, exports) {
 let files = {
-    creep: __require(7,3),
-    flag: __require(8,3),
+    roomPosition: __require(8,3),
+    creep: __require(9,3),
+    flag: __require(10,3),
 }
 return module.exports;
 }
 /********** End of module 3: C:\Users\natew\WebstormProjects\screepy\src\prototypes\index.js **********/
-/********** Start module 4: C:\Users\natew\WebstormProjects\screepy\src\creeps\harvester.js **********/
+/********** Start module 4: C:\Users\natew\WebstormProjects\screepy\src\manager\index.js **********/
 __modules[4] = function(module, exports) {
+let managerLogic = {
+    Job:     __require(11,4),
+    Manager: __require(12,4),
+}
+
+module.exports = managerLogic;
+return module.exports;
+}
+/********** End of module 4: C:\Users\natew\WebstormProjects\screepy\src\manager\index.js **********/
+/********** Start module 5: C:\Users\natew\WebstormProjects\screepy\src\creeps\harvester.js **********/
+__modules[5] = function(module, exports) {
 var harvester = {
 
     /** @param {Creep} creep **/
@@ -155,9 +186,9 @@ var harvester = {
 module.exports = harvester;
 return module.exports;
 }
-/********** End of module 4: C:\Users\natew\WebstormProjects\screepy\src\creeps\harvester.js **********/
-/********** Start module 5: C:\Users\natew\WebstormProjects\screepy\src\creeps\upgrader.js **********/
-__modules[5] = function(module, exports) {
+/********** End of module 5: C:\Users\natew\WebstormProjects\screepy\src\creeps\harvester.js **********/
+/********** Start module 6: C:\Users\natew\WebstormProjects\screepy\src\creeps\upgrader.js **********/
+__modules[6] = function(module, exports) {
 var roleUpgrader = {
 
     /** @param {Creep} creep **/
@@ -194,10 +225,10 @@ var roleUpgrader = {
 module.exports = roleUpgrader;
 return module.exports;
 }
-/********** End of module 5: C:\Users\natew\WebstormProjects\screepy\src\creeps\upgrader.js **********/
-/********** Start module 6: C:\Users\natew\WebstormProjects\screepy\src\room\spawning.js **********/
-__modules[6] = function(module, exports) {
-let creepLogic = __require(1,6);
+/********** End of module 6: C:\Users\natew\WebstormProjects\screepy\src\creeps\upgrader.js **********/
+/********** Start module 7: C:\Users\natew\WebstormProjects\screepy\src\room\spawning.js **********/
+__modules[7] = function(module, exports) {
+let creepLogic = __require(1,7);
 let creepTypes = _.keys(creepLogic);
 
 function spawnCreeps(room) {
@@ -219,76 +250,158 @@ function spawnCreeps(room) {
 module.exports = spawnCreeps;
 return module.exports;
 }
-/********** End of module 6: C:\Users\natew\WebstormProjects\screepy\src\room\spawning.js **********/
-/********** Start module 7: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
-__modules[7] = function(module, exports) {
+/********** End of module 7: C:\Users\natew\WebstormProjects\screepy\src\room\spawning.js **********/
+/********** Start module 8: C:\Users\natew\WebstormProjects\screepy\src\prototypes\roomPostion.js **********/
+__modules[8] = function(module, exports) {
+RoomPosition.prototype.squarePosInRange = function (range) {
+    let pos = this;
+    let returnArray = [];
+    _.range(-1 * range, range+1).forEach(function(x) {
+        _.range(-1 * range, range+1).forEach(function(y) {
+            returnArray.push(new RoomPosition(pos.x+x,pos.y+y,pos.roomName));
+        });
+    });
+    return returnArray;
+
+}
+return module.exports;
+}
+/********** End of module 8: C:\Users\natew\WebstormProjects\screepy\src\prototypes\roomPostion.js **********/
+/********** Start module 9: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
+__modules[9] = function(module, exports) {
 Creep.prototype.sayHello = function sayHello() {
     this.say("Hello", true);
 }
 return module.exports;
 }
-/********** End of module 7: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
-/********** Start module 8: C:\Users\natew\WebstormProjects\screepy\src\prototypes\flag.js **********/
-__modules[8] = function(module, exports) {
+/********** End of module 9: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
+/********** Start module 10: C:\Users\natew\WebstormProjects\screepy\src\prototypes\flag.js **********/
+__modules[10] = function(module, exports) {
+let Job = __require(11,10);
+
 Flag.prototype.process = function () {
-    if (!('processed' in this.memory)) {
-        this.memory.processed = false;
-    }
-    if (this.memory.processed) {
-        if (!('deleteMe' in this.memory)) this.memory.deleteMe = true;
-        if (!('type' in this.memory)) this.memory.deleteMe = true;
-        if (this.memory.deleteMe) {
-            console.log('flag ' + this.name + ' has been marked for deletion');
+    let flag = this;
+    if (!flag.memory.processed) flag.memory.processed = false;
+    if (flag.memory.processed) {
+        if (!('deleteMe' in flag.memory)) flag.memory.deleteMe = true;
+        if (!flag.memory.type) flag.memory.deleteMe = true;
+        if (flag.memory.deleteMe) {
+            console.log('flag ' + flag.name + ' has been marked for deletion');
         }
 
 
     } else {
-        if (this.pos.roomName in Game.rooms) {
-            this.memory.deleteMe = false;
-            let sources = this.pos.findInRange(FIND_SOURCES,0);
+
+        console.log(`${flag.name} hasn't been processed yet!`);
+        if (flag.pos.roomName in Game.rooms) {
+            flag.memory.deleteMe = false;
+            flag.memory.processed = true;
+            let sources = flag.pos.findInRange(FIND_SOURCES,0);
             if (sources.length == 1) {
-                this.memory.type = 'source';
-                this.setColor(COLOR_YELLOW);
+                flag.memory.type = 'source';
+                flag.setColor(COLOR_YELLOW);
                 source = sources[0];
-                this.memory.sourceId = source.id;
-                this.memory.harvestLocations = [];
-                let flag = this;
-                _.range(-1, 2).forEach(function(x) {
-                    _.range(-1, 2).forEach(function(y) {
-                        if (!((x == 0) && (y == 0))) {
-                            let checkPosition = new RoomPosition(source.pos.x+x, source.pos.y+y, source.pos.roomName);
-                            console.log(checkPosition);
-                            let terrain = source.room.getTerrain().get(checkPosition.x, checkPosition.y);
-                            if (terrain !== TERRAIN_MASK_WALL) {
-                                flag.memory.harvestLocations.push(checkPosition);
-                            }
-                        }
-                    });
+                flag.memory.sourceId = source.id;
+                flag.memory.harvestLocations = source.pos.squarePosInRange(1).filter(function (pos) {
+                    return source.room.getTerrain().get(pos.x, pos.y) !== TERRAIN_MASK_WALL;
                 });
+
             }
-            this.memory.processed = true;
-            console.log('a flag named ' + this.name + ' and type ' + this.memory.type + ' was added');
+            console.log('a flag named ' + flag.name + ' and type ' + flag.memory.type + ' was added');
         } else {
-            this.memory.deleteMe = true;
-            console.log('a flag named ' + this.name + ' and type ' + this.memory.type + ' was deleted due to visibility');
+            flag.memory.deleteMe = true;
+            console.log('a flag named ' + flag.name + ' and type ' + flag.memory.type + ' was deleted due to visibility');
 
         }
-
-
     }
 
 }
 
 Flag.prototype.visualize = function () {
-    if (this.memory.processed) {
-        _.forEach(this.memory.harvestLocations, function (pos) {
-            new RoomVisual(pos.roomName).circle(pos.x, pos.y, {fill: '#FFFF00', stroke: '#ffff00', radius: .15, opacity: 0.5});
-        });
+    let flag = this;
+    if (flag.memory.processed) {
+        if (flag.memory.type == 'source') {
+            _.forEach(flag.memory.harvestLocations, function (pos) {
+                new RoomVisual(pos.roomName).circle(pos.x, pos.y, {fill: '#FFFF00', stroke: '#ffff00', radius: .15, opacity: 0.5});
+            });
+        }
     }
+
+}
+
+Flag.prototype.jobs = function () {
+    let flag = this;
+    let jobs = [];
+    if (flag.memory.processed) {
+        if (flag.memory.type == 'source') {
+            jobs = _.map(flag.memory.harvestLocations, function(pos) {
+                return new Job('harvest',1,{
+                    sourceId: flag.memory.sourceId,
+                    harvestPos: pos,
+                })
+            })
+        }
+    }
+    return jobs;
 }
 return module.exports;
 }
-/********** End of module 8: C:\Users\natew\WebstormProjects\screepy\src\prototypes\flag.js **********/
+/********** End of module 10: C:\Users\natew\WebstormProjects\screepy\src\prototypes\flag.js **********/
+/********** Start module 11: C:\Users\natew\WebstormProjects\screepy\src\manager\job.js **********/
+__modules[11] = function(module, exports) {
+function Job(type, priority, details) {
+    this.createdTime = Game.time;
+    this.type = type;
+    this.details = details;
+    this.priority = priority;
+    this.assignedScreepId = '';
+
+}
+
+Job.prototype.toString = function () {
+    return `${this.type} task instance created at ${this.createdTime} reserved by ${this.assignedScreepId=='' ? 'Nobody' : this.assignedScreepId}`;
+}
+
+module.exports = Job;
+return module.exports;
+}
+/********** End of module 11: C:\Users\natew\WebstormProjects\screepy\src\manager\job.js **********/
+/********** Start module 12: C:\Users\natew\WebstormProjects\screepy\src\manager\manager.js **********/
+__modules[12] = function(module, exports) {
+let Job = __require(11,12);
+let prototypes = __require(3,12);
+let manager = {
+
+    createJobQueue: function () {
+        let queue = [];
+        _.forEach(Game.flags, function (flag, name) {
+            queue = queue.concat(flag.jobs());
+        });
+        queue = _.sortByOrder(queue, ['priority'], ['desc']);
+        return queue;
+    },
+
+    createSpawnQueue: function (jobQueue) {
+        let spawnQueue = [];
+        let harvesterCount = _.filter(jobQueue, function (job) {return ((job.assignedScreepId == '') && (job.type == 'harvest'))}).length;
+        spawnQueue = spawnQueue.concat(spawnQueue, _.range(0, harvesterCount).map(function (harvesterNumber) {
+            return {
+                parts: [MOVE, MOVE, WORK, WORK],
+                priority: 10,
+            }
+        }));
+        spawnQueue = _.sortByOrder(spawnQueue, ['priority'], ['desc']);
+        return spawnQueue;
+
+
+    }
+
+
+}
+module.exports = manager;
+return module.exports;
+}
+/********** End of module 12: C:\Users\natew\WebstormProjects\screepy\src\manager\manager.js **********/
 /********** Footer **********/
 if(typeof module === "object")
 	module.exports = __require(0);
