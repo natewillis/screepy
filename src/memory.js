@@ -27,7 +27,11 @@ let spawningSnapshot = function (spawning) {
     };
 };
 let reservationSnapshot = function (reservation) {
-    return {username: reservation.username, ticks_to_end: reservation.ticksToEnd};
+    if ('username' in reservation) {
+        return {username: reservation.username, ticks_to_end: reservation.ticksToEnd};
+    } else {
+        return null
+    }
 };
 let signSnapshot = function (sign) {
     return {username: sign.username, text: sign.text, time: sign.time, datetime: sign.datetime};
@@ -42,137 +46,160 @@ let generic_snapshot = function (generic_obj, code_type) {
     };
 
     // id
-    if (generic_obj.hasOwnProperty('id')) {
+    if ('id' in generic_obj) {
         snapshot['id'] = generic_obj.id;
     }
 
     // room position
-    if (generic_obj.hasOwnProperty('pos')) {
+    if ('pos' in generic_obj) {
         snapshot['pos'] = roomPosSnapshot(generic_obj.pos);
     }
 
     // hits
-    if (generic_obj.hasOwnProperty('hits')) {
+    if ('hits' in generic_obj) {
         snapshot['hits'] = generic_obj.hits;
     }
 
     // hits_max
-    if (generic_obj.hasOwnProperty('hitsMax')) {
+    if ('hitsMax' in generic_obj) {
         snapshot['hits_max'] = generic_obj.hitsMax;
     }
 
     // room_name
-    if (generic_obj.hasOwnProperty('room')) {
+    if ('room' in generic_obj) {
         snapshot['room_name'] = generic_obj.room.name;
     }
 
     // structure_type
-    if (generic_obj.hasOwnProperty('structureType')) {
+    if ('structureType' in generic_obj) {
         snapshot['structure_type'] = generic_obj.structureType;
     }
 
     // owner
-    if (generic_obj.hasOwnProperty('owner')) {
-        snapshot['owner'] = generic_obj.owner.username;
+    if ('owner' in generic_obj) {
+        if (!('owner' == undefined)) {
+            snapshot['owner'] = generic_obj.owner.username;
+        }
     }
 
     // memory
-    if (generic_obj.hasOwnProperty('memory')) {
+    if ('memory' in generic_obj) {
         snapshot['memory'] = generic_obj.memory;
     }
 
     // name
-    if (generic_obj.hasOwnProperty('name')) {
+    if ('name' in generic_obj) {
         snapshot['name'] = generic_obj.name;
     }
 
     // fatigue
-    if (generic_obj.hasOwnProperty('fatigue')) {
+    if ('fatigue' in generic_obj) {
         snapshot['fatigue'] = generic_obj.fatigue;
     }
 
     // saying
-    if (generic_obj.hasOwnProperty('saying')) {
+    if ('saying' in generic_obj) {
         snapshot['saying'] = generic_obj.saying;
     }
 
     // am_i_spawning and what_am_i_spawning
-    if (generic_obj.hasOwnProperty('spawning')) {
-        if (generic_obj.hasOwnProperty('structureType')) {
-            snapshot['what_am_i_spawning'] = spawningSnapshot(generic_obj.spawning);
+    if ('spawning' in generic_obj) {
+        if ('structureType' in generic_obj) {
+            if (!(generic_obj.spawning == undefined)) {
+                snapshot['what_am_i_spawning'] = spawningSnapshot(generic_obj.spawning);
+            }
         } else {
             snapshot['am_i_spawning'] = generic_obj.spawning;
         }
     }
 
     // store
-    if (generic_obj.hasOwnProperty('store')) {
+    if ('store' in generic_obj) {
         snapshot['store'] = storeSnapshot(generic_obj.store);
     }
 
     // ticks_to_live
-    if (generic_obj.hasOwnProperty('ticks_to_live')) {
+    if ('ticks_to_live' in generic_obj) {
         snapshot['ticks_to_live'] = generic_obj.ticks_to_live;
     }
 
     // color
-    if (generic_obj.hasOwnProperty('color')) {
+    if ('color' in generic_obj) {
         snapshot['color'] = generic_obj.color;
     }
 
     // secondary_color
-    if (generic_obj.hasOwnProperty('secondaryColor')) {
+    if ('secondaryColor' in generic_obj) {
         snapshot['secondary_color'] = generic_obj.secondaryColor;
     }
 
     // level
-    if (generic_obj.hasOwnProperty('level')) {
+    if ('level' in generic_obj) {
         snapshot['level'] = generic_obj.level;
     }
 
     // progress
-    if (generic_obj.hasOwnProperty('progress')) {
+    if ('progress' in generic_obj) {
         snapshot['progress'] = generic_obj.progress;
     }
 
     // progress_total
-    if (generic_obj.hasOwnProperty('progressTotal')) {
+    if ('progressTotal' in generic_obj) {
         snapshot['progress_total'] = generic_obj.progressTotal;
     }
 
     // reservation
-    if (generic_obj.hasOwnProperty('reservation')) {
-        snapshot['reservation'] = reservationSnapshot(generic_obj.reservation);
+    if ('reservation' in generic_obj) {
+        if (!(generic_obj.reservation == undefined)) {
+            snapshot['reservation'] = reservationSnapshot(generic_obj.reservation);
+        }
     }
 
     // safe_mode_ticks_remaining
-    if (generic_obj.hasOwnProperty('safeMode')) {
+    if ('safeMode' in generic_obj) {
         snapshot['safe_mode_ticks_remaining'] = generic_obj.safeMode;
     }
 
     // safe_mode_activations_available
-    if (generic_obj.hasOwnProperty('safeModeAvailable')) {
+    if ('safeModeAvailable' in generic_obj) {
         snapshot['safe_mode_activations_available'] = generic_obj.safeModeAvailable;
     }
 
     // safe_mode_cooldown_ticks_remaining
-    if (generic_obj.hasOwnProperty('safeModeCooldown')) {
+    if ('safeModeCooldown' in generic_obj) {
         snapshot['safe_mode_cooldown_ticks_remaining'] = generic_obj.safeModeCooldown;
     }
 
     // ticks_to_downgrade
-    if (generic_obj.hasOwnProperty('ticksToDowngrade')) {
+    if ('ticksToDowngrade' in generic_obj) {
         snapshot['ticks_to_downgrade'] = generic_obj.ticksToDowngrade;
     }
 
     // sign
-    if (generic_obj.hasOwnProperty('sign')) {
-        snapshot['sign'] = signSnapshot(generic_obj.sign);
+    if ('sign' in generic_obj) {
+        if (!(generic_obj.sign == undefined)) {
+            snapshot['sign'] = signSnapshot(generic_obj.sign);
+        }
     }
 
     // upgrade_blocked_ticks
-    if (generic_obj.hasOwnProperty('upgradeBlocked')) {
+    if ('upgradeBlocked' in generic_obj) {
         snapshot['upgrade_blocked_ticks'] = generic_obj.upgradeBlocked;
+    }
+
+    // energy_capacity
+    if ('energyCapacity' in generic_obj) {
+        snapshot['energy_capacity'] = generic_obj.energyCapacity;
+    }
+
+    // energy
+    if ('energy' in generic_obj) {
+        snapshot['energy'] = generic_obj.energy;
+    }
+
+    // ticks_to_regeneration
+    if ('ticksToRegeneration' in generic_obj) {
+        snapshot['ticks_to_regeneration'] = generic_obj.ticksToRegeneration;
     }
 
     // return finished dict
@@ -214,7 +241,7 @@ let memory = {
 
             // flags
             _.forEach(Game.flags, function (flag) {
-                Memory.snapshot.objects[source.id] = generic_snapshot(source, 'flag');
+                Memory.snapshot.objects[flag.name] = generic_snapshot(flag, 'flag');
             });
 
         });
