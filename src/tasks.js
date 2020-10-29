@@ -14,18 +14,19 @@ let task_logic = {
 
         // load the queues in to a variable
         let tasks = Memory.tasks[Game.time];
+        console.log(tasks['320727bab8b0c3b']['type']);
 
         // loop through rooms I can see and run tasks for everything
         _.forEach(Game.rooms, function (room) {
             _.forEach(room.find(FIND_STRUCTURES), function (structure) {
-                if (structure.hasOwnProperty('execute_task')) {
+                if ('execute_task' in structure) {
                     if (structure.id in tasks) {
                         structure.execute_task(tasks[structure.id]);
                     }
                 }
             });
             _.forEach(room.find(FIND_CREEPS), function (creep) {
-                if (creep.hasOwnProperty('execute_task')) {
+                if ('execute_task' in creep) {
                     if (creep.id in tasks) {
                         creep.execute_task(tasks[creep.id]);
                     }

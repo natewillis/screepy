@@ -76,7 +76,7 @@ return module.exports;
 __modules[2] = function(module, exports) {
 // these functions wont be directly called because I dont include them in the module scope
 let roomPosSnapshot = function (pos) {
-    return {x: pos.x, y: pos.y, roomName: pos.roomName};
+    return {x: pos.x, y: pos.y, room_name: pos.roomName};
 };
 let storeSnapshot = function (store) {
     return {
@@ -261,16 +261,17 @@ let task_logic = {
             return;
         }
         let tasks = Memory.tasks[Game.time];
+        console.log(tasks['320727bab8b0c3b']['type']);
         _.forEach(Game.rooms, function (room) {
             _.forEach(room.find(FIND_STRUCTURES), function (structure) {
-                if (structure.hasOwnProperty('execute_task')) {
+                if ('execute_task' in structure) {
                     if (structure.id in tasks) {
                         structure.execute_task(tasks[structure.id]);
                     }
                 }
             });
             _.forEach(room.find(FIND_CREEPS), function (creep) {
-                if (creep.hasOwnProperty('execute_task')) {
+                if ('execute_task' in creep) {
                     if (creep.id in tasks) {
                         creep.execute_task(tasks[creep.id]);
                     }
@@ -322,6 +323,8 @@ __modules[5] = function(module, exports) {
 Spawn.prototype.execute_task = function (task) {
     spawn = this;
     task.received = true;
+
+    console.log(task);
     if (task.type == 'spawnCreep') {
         task.executed_return_value = spawn.spawnCreep(task.details.body, task.details.name);
     } else {

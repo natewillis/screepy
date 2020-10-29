@@ -6,6 +6,8 @@ Spawn.prototype.execute_task = function (task) {
     // let the task know it was assigned to a creep
     task.received = true;
 
+    console.log(task);
+
     // spawn action
     if (task.type == 'spawnCreep') {
         task.executed_return_value = spawn.spawnCreep(task.details.body, task.details.name);

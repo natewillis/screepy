@@ -2,7 +2,7 @@
 
 // these snapshot functions are used int the generic structure snapshot
 let roomPosSnapshot = function (pos) {
-    return {x: pos.x, y: pos.y, roomName: pos.roomName};
+    return {x: pos.x, y: pos.y, room_name: pos.roomName};
 };
 let storeSnapshot = function (store) {
     return {
