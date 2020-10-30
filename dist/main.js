@@ -51,9 +51,10 @@ function __getDirname(path) {
 /********** End of header **********/
 /********** Start module 0: C:\Users\natew\WebstormProjects\screepy\src\main.js **********/
 __modules[0] = function(module, exports) {
-let prototypes = __require(1,0);
-let memory = __require(2,0);
-let tasks = __require(3,0);
+let utilities = __require(1,0);
+let prototypes = __require(2,0);
+let memory = __require(3,0);
+let tasks = __require(4,0);
 
 module.exports.loop = function () {
     memory.snapshot();
@@ -63,17 +64,34 @@ module.exports.loop = function () {
 return module.exports;
 }
 /********** End of module 0: C:\Users\natew\WebstormProjects\screepy\src\main.js **********/
-/********** Start module 1: C:\Users\natew\WebstormProjects\screepy\src\prototypes\index.js **********/
+/********** Start module 1: C:\Users\natew\WebstormProjects\screepy\src\utilities.js **********/
 __modules[1] = function(module, exports) {
+let utilities = {
+    universal_id: function (game_object) {
+        if ('structureType' in game_object) {
+            return game_object.structureType+'-'+game_object.pos.roomName+'-'+game_object.pos.x+'-'+game_object.pos.y;
+        } else if ('name' in game_object) {
+            return game_object.name;
+        } else {
+            return game_object.id;
+        }
+    }
+}
+module.exports = utilities
+return module.exports;
+}
+/********** End of module 1: C:\Users\natew\WebstormProjects\screepy\src\utilities.js **********/
+/********** Start module 2: C:\Users\natew\WebstormProjects\screepy\src\prototypes\index.js **********/
+__modules[2] = function(module, exports) {
 let files = {
-    creep: __require(4,1),
-    spawn: __require(5,1),
+    creep: __require(5,2),
+    spawn: __require(6,2),
 }
 return module.exports;
 }
-/********** End of module 1: C:\Users\natew\WebstormProjects\screepy\src\prototypes\index.js **********/
-/********** Start module 2: C:\Users\natew\WebstormProjects\screepy\src\memory.js **********/
-__modules[2] = function(module, exports) {
+/********** End of module 2: C:\Users\natew\WebstormProjects\screepy\src\prototypes\index.js **********/
+/********** Start module 3: C:\Users\natew\WebstormProjects\screepy\src\memory.js **********/
+__modules[3] = function(module, exports) {
 // these functions wont be directly called because I dont include them in the module scope
 let roomPosSnapshot = function (pos) {
     return {x: pos.x, y: pos.y, room_name: pos.roomName};
@@ -248,9 +266,10 @@ let memory = {
 module.exports = memory;
 return module.exports;
 }
-/********** End of module 2: C:\Users\natew\WebstormProjects\screepy\src\memory.js **********/
-/********** Start module 3: C:\Users\natew\WebstormProjects\screepy\src\tasks.js **********/
-__modules[3] = function(module, exports) {
+/********** End of module 3: C:\Users\natew\WebstormProjects\screepy\src\memory.js **********/
+/********** Start module 4: C:\Users\natew\WebstormProjects\screepy\src\tasks.js **********/
+__modules[4] = function(module, exports) {
+let utilities = __require(1,4);
 let task_logic = {
     execute_tasks: function () {
         if (!('tasks' in Memory)) {
@@ -261,19 +280,18 @@ let task_logic = {
             return;
         }
         let tasks = Memory.tasks[Game.time];
-        console.log(tasks['320727bab8b0c3b']['type']);
         _.forEach(Game.rooms, function (room) {
             _.forEach(room.find(FIND_STRUCTURES), function (structure) {
                 if ('execute_task' in structure) {
-                    if (structure.id in tasks) {
-                        structure.execute_task(tasks[structure.id]);
+                    if (utilities.universal_id(structure) in tasks) {
+                        structure.execute_task(tasks[utilities.universal_id(structure)]);
                     }
                 }
             });
             _.forEach(room.find(FIND_CREEPS), function (creep) {
                 if ('execute_task' in creep) {
-                    if (creep.id in tasks) {
-                        creep.execute_task(tasks[creep.id]);
+                    if (utilities.universal_id(creep) in tasks) {
+                        creep.execute_task(tasks[utilities.universal_id(creep)]);
                     }
                 }
             });
@@ -284,9 +302,9 @@ let task_logic = {
 module.exports = task_logic;
 return module.exports;
 }
-/********** End of module 3: C:\Users\natew\WebstormProjects\screepy\src\tasks.js **********/
-/********** Start module 4: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
-__modules[4] = function(module, exports) {
+/********** End of module 4: C:\Users\natew\WebstormProjects\screepy\src\tasks.js **********/
+/********** Start module 5: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
+__modules[5] = function(module, exports) {
 Creep.prototype.execute_task = function (task) {
     let creep = this;
     task.received = true;
@@ -315,11 +333,15 @@ Creep.prototype.execute_task = function (task) {
     }
 
 }
+
+Creep.prototype.universal_id = function () {
+    return this.name;
+}
 return module.exports;
 }
-/********** End of module 4: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
-/********** Start module 5: C:\Users\natew\WebstormProjects\screepy\src\prototypes\spawn.js **********/
-__modules[5] = function(module, exports) {
+/********** End of module 5: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
+/********** Start module 6: C:\Users\natew\WebstormProjects\screepy\src\prototypes\spawn.js **********/
+__modules[6] = function(module, exports) {
 Spawn.prototype.execute_task = function (task) {
     spawn = this;
     task.received = true;
@@ -334,7 +356,7 @@ Spawn.prototype.execute_task = function (task) {
 }
 return module.exports;
 }
-/********** End of module 5: C:\Users\natew\WebstormProjects\screepy\src\prototypes\spawn.js **********/
+/********** End of module 6: C:\Users\natew\WebstormProjects\screepy\src\prototypes\spawn.js **********/
 /********** Footer **********/
 if(typeof module === "object")
 	module.exports = __require(0);
