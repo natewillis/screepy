@@ -1,3 +1,4 @@
+let utilities = require('./utilities');
 let prototypes = require('./prototypes');
 let memory = require('./memory');
 let tasks = require('./tasks');

@@ -32,3 +32,7 @@ Creep.prototype.execute_task = function (task) {
     }
 
 }
+
+Creep.prototype.universal_id = function () {
+    return this.name;
+}
