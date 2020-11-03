@@ -92,7 +92,7 @@ return module.exports;
 /********** End of module 2: C:\Users\natew\WebstormProjects\screepy\src\prototypes\index.js **********/
 /********** Start module 3: C:\Users\natew\WebstormProjects\screepy\src\memory.js **********/
 __modules[3] = function(module, exports) {
-// these functions wont be directly called because I dont include them in the module scope
+let utilities = __require(1,3);
 let roomPosSnapshot = function (pos) {
     return {x: pos.x, y: pos.y, room_name: pos.roomName};
 };
@@ -135,6 +135,7 @@ let generic_snapshot = function (generic_obj, code_type) {
     if ('id' in generic_obj) {
         snapshot['id'] = generic_obj.id;
     }
+    snapshot['universal_id'] = utilities.universal_id(generic_obj);
     if ('pos' in generic_obj) {
         snapshot['pos'] = roomPosSnapshot(generic_obj.pos);
     }
@@ -230,6 +231,9 @@ let generic_snapshot = function (generic_obj, code_type) {
     }
     if ('ticksToRegeneration' in generic_obj) {
         snapshot['ticks_to_regeneration'] = generic_obj.ticksToRegeneration;
+    }
+    if ('body' in generic_obj) {
+        snapshot['detailed_body'] = generic_obj.body;
     }
     return snapshot;
 
@@ -348,8 +352,10 @@ Spawn.prototype.execute_task = function (task) {
 
     console.log(task);
     if (task.type == 'spawnCreep') {
+        console.log('spawn is producing creep on tick ' + task.tick);
         task.executed_return_value = spawn.spawnCreep(task.details.body, task.details.name);
     } else {
+        console.log('spawn is executing unknown task');
         task.executed_return_value = 99;
     }
 

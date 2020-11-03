@@ -1,3 +1,5 @@
+let utilities = require('./utilities');
+
 // these functions wont be directly called because I dont include them in the module scope
 
 // these snapshot functions are used int the generic structure snapshot
@@ -49,6 +51,9 @@ let generic_snapshot = function (generic_obj, code_type) {
     if ('id' in generic_obj) {
         snapshot['id'] = generic_obj.id;
     }
+
+    // universal id
+    snapshot['universal_id'] = utilities.universal_id(generic_obj);
 
     // room position
     if ('pos' in generic_obj) {
@@ -200,6 +205,11 @@ let generic_snapshot = function (generic_obj, code_type) {
     // ticks_to_regeneration
     if ('ticksToRegeneration' in generic_obj) {
         snapshot['ticks_to_regeneration'] = generic_obj.ticksToRegeneration;
+    }
+
+    // detailed_body
+    if ('body' in generic_obj) {
+        snapshot['detailed_body'] = generic_obj.body;
     }
 
     // return finished dict
