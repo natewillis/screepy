@@ -82,7 +82,7 @@ let generic_snapshot = function (generic_obj, code_type) {
 
     // owner
     if ('owner' in generic_obj) {
-        if (!('owner' == undefined)) {
+        if (!(typeof generic_obj.owner === 'undefined')) {
             snapshot['owner'] = generic_obj.owner.username;
         }
     }
@@ -124,8 +124,8 @@ let generic_snapshot = function (generic_obj, code_type) {
     }
 
     // ticks_to_live
-    if ('ticks_to_live' in generic_obj) {
-        snapshot['ticks_to_live'] = generic_obj.ticks_to_live;
+    if ('ticksToLive' in generic_obj) {
+        snapshot['ticks_to_live'] = generic_obj.ticksToLive;
     }
 
     // color
@@ -236,22 +236,22 @@ let memory = {
 
             // structures
             _.forEach(room.find(FIND_STRUCTURES), function (structure) {
-                Memory.snapshot.objects[structure.id] = generic_snapshot(structure, 'structure');
+                Memory.snapshot.objects[utilities.universal_id(structure)] = generic_snapshot(structure, 'structure');
             });
 
             // creeps
             _.forEach(room.find(FIND_CREEPS), function (creep) {
-                Memory.snapshot.objects[creep.id] = generic_snapshot(creep, 'creep');
+                Memory.snapshot.objects[utilities.universal_id(creep)] = generic_snapshot(creep, 'creep');
             });
 
             // sources
             _.forEach(room.find(FIND_SOURCES), function (source) {
-                Memory.snapshot.objects[source.id] = generic_snapshot(source, 'source');
+                Memory.snapshot.objects[utilities.universal_id(source)] = generic_snapshot(source, 'source');
             });
 
             // flags
             _.forEach(Game.flags, function (flag) {
-                Memory.snapshot.objects[flag.name] = generic_snapshot(flag, 'flag');
+                Memory.snapshot.objects[utilities.universal_id(flag)] = generic_snapshot(flag, 'flag');
             });
 
         });

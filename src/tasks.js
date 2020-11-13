@@ -11,6 +11,8 @@ let task_logic = {
         if (!(Game.time in Memory.tasks)) {
             console.log('No tasks for tick ' + Game.time);
             return;
+        } else {
+            console.log('tasks for ' + Game.time);
         }
 
         // load the queues in to a variable
@@ -21,14 +23,18 @@ let task_logic = {
             _.forEach(room.find(FIND_STRUCTURES), function (structure) {
                 if ('execute_task' in structure) {
                     if (utilities.universal_id(structure) in tasks) {
-                        structure.execute_task(tasks[utilities.universal_id(structure)]);
+                        _.forEach(tasks[utilities.universal_id(structure)], function(task) {
+                            structure.execute_task(task);
+                        });
                     }
                 }
             });
             _.forEach(room.find(FIND_CREEPS), function (creep) {
                 if ('execute_task' in creep) {
                     if (utilities.universal_id(creep) in tasks) {
-                        creep.execute_task(tasks[utilities.universal_id(creep)]);
+                        _.forEach(tasks[utilities.universal_id(creep)], function(task) {
+                            creep.execute_task(task);
+                        });
                     }
                 }
             });

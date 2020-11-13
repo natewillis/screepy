@@ -75,7 +75,35 @@ let utilities = {
         } else {
             return game_object.id;
         }
-    }
+    },
+    get_object_by_universal_id: function(universal_id) {
+
+        let returnMatch = universal_id.match(/([a-z]+)-([WE]\d+[NE]\d+)-(\d+)-(\d+)/);
+        if (returnMatch) {
+            console.log('found a structure regex of ' + returnMatch)
+            console.log('room of ' + returnMatch[2] + ' and x of ' + returnMatch[3] + ' and y of ' + returnMatch[4])
+            let roomPos = new RoomPosition(parseInt(returnMatch[3]), parseInt(returnMatch[4]), returnMatch[2]);
+            console.log(roomPos)
+            let structureType = returnMatch[1];
+            console.log('found a type of ' + structureType)
+            const structuresAtRoomPos = roomPos.lookFor(LOOK_STRUCTURES);
+            console.log('found structures at position ' + roomPos + ' of ' + structuresAtRoomPos)
+            let returnStruct = _.find(structuresAtRoomPos, function(structure) {return structure.structureType == structureType})
+            console.log('found a structure of the right type in ' + returnStruct)
+            if (returnStruct) {
+                return returnStruct
+            } else {
+                return undefined
+            }
+
+        } else if (universal_id.length == 32) {
+            return Game.creeps[universal_id]
+        } else {
+            console.log('we didnt find any matches for ' + universal_id)
+            return Game.getObjectById(universal_id)
+        }
+
+    },
 }
 module.exports = utilities
 return module.exports;
@@ -152,7 +180,7 @@ let generic_snapshot = function (generic_obj, code_type) {
         snapshot['structure_type'] = generic_obj.structureType;
     }
     if ('owner' in generic_obj) {
-        if (!('owner' == undefined)) {
+        if (!(typeof generic_obj.owner === 'undefined')) {
             snapshot['owner'] = generic_obj.owner.username;
         }
     }
@@ -180,8 +208,8 @@ let generic_snapshot = function (generic_obj, code_type) {
     if ('store' in generic_obj) {
         snapshot['store'] = storeSnapshot(generic_obj.store);
     }
-    if ('ticks_to_live' in generic_obj) {
-        snapshot['ticks_to_live'] = generic_obj.ticks_to_live;
+    if ('ticksToLive' in generic_obj) {
+        snapshot['ticks_to_live'] = generic_obj.ticksToLive;
     }
     if ('color' in generic_obj) {
         snapshot['color'] = generic_obj.color;
@@ -249,16 +277,16 @@ let memory = {
         };
         _.forEach(Game.rooms, function (room, name) {
             _.forEach(room.find(FIND_STRUCTURES), function (structure) {
-                Memory.snapshot.objects[structure.id] = generic_snapshot(structure, 'structure');
+                Memory.snapshot.objects[utilities.universal_id(structure)] = generic_snapshot(structure, 'structure');
             });
             _.forEach(room.find(FIND_CREEPS), function (creep) {
-                Memory.snapshot.objects[creep.id] = generic_snapshot(creep, 'creep');
+                Memory.snapshot.objects[utilities.universal_id(creep)] = generic_snapshot(creep, 'creep');
             });
             _.forEach(room.find(FIND_SOURCES), function (source) {
-                Memory.snapshot.objects[source.id] = generic_snapshot(source, 'source');
+                Memory.snapshot.objects[utilities.universal_id(source)] = generic_snapshot(source, 'source');
             });
             _.forEach(Game.flags, function (flag) {
-                Memory.snapshot.objects[flag.name] = generic_snapshot(flag, 'flag');
+                Memory.snapshot.objects[utilities.universal_id(flag)] = generic_snapshot(flag, 'flag');
             });
 
         });
@@ -282,20 +310,26 @@ let task_logic = {
         if (!(Game.time in Memory.tasks)) {
             console.log('No tasks for tick ' + Game.time);
             return;
+        } else {
+            console.log('tasks for ' + Game.time);
         }
         let tasks = Memory.tasks[Game.time];
         _.forEach(Game.rooms, function (room) {
             _.forEach(room.find(FIND_STRUCTURES), function (structure) {
                 if ('execute_task' in structure) {
                     if (utilities.universal_id(structure) in tasks) {
-                        structure.execute_task(tasks[utilities.universal_id(structure)]);
+                        _.forEach(tasks[utilities.universal_id(structure)], function(task) {
+                            structure.execute_task(task);
+                        });
                     }
                 }
             });
             _.forEach(room.find(FIND_CREEPS), function (creep) {
                 if ('execute_task' in creep) {
                     if (utilities.universal_id(creep) in tasks) {
-                        creep.execute_task(tasks[utilities.universal_id(creep)]);
+                        _.forEach(tasks[utilities.universal_id(creep)], function(task) {
+                            creep.execute_task(task);
+                        });
                     }
                 }
             });
@@ -309,29 +343,35 @@ return module.exports;
 /********** End of module 4: C:\Users\natew\WebstormProjects\screepy\src\tasks.js **********/
 /********** Start module 5: C:\Users\natew\WebstormProjects\screepy\src\prototypes\creep.js **********/
 __modules[5] = function(module, exports) {
+let utilities = __require(1,5);
+
 Creep.prototype.execute_task = function (task) {
     let creep = this;
+    console.log('creep ' + creep.name + ' is performing task of type ' + task.type + ' on tick ' + task.tick)
+    if ('console_output' in task) {
+        console.log(task.console_output)
+    }
     task.received = true;
     if (task.type == 'move') {
         task.executed_return_value = creep.move(task.details.direction);
     } else if (task.type == 'pickup') {
-        task.executed_return_value = creep.pickup(task.details.target);
+        task.executed_return_value = creep.pickup(utilities.get_object_by_universal_id(task.details.target));
     } else if (task.type == 'harvest') {
-        task.executed_return_value = creep.harvest(task.details.target);
+        task.executed_return_value = creep.harvest(utilities.get_object_by_universal_id(task.details.target));
     } else if (task.type == 'transfer') {
         if ('amount' in task.details) {
-            task.executed_return_value = creep.transfer(task.details.target, task.details.resource_type, task.details.amount);
+            task.executed_return_value = creep.transfer(utilities.get_object_by_universal_id(task.details.target), task.details.resource_type, task.details.amount);
         } else {
-            task.executed_return_value = creep.transfer(task.details.target, task.details.resource_type);
+            task.executed_return_value = creep.transfer(utilities.get_object_by_universal_id(task.details.target), task.details.resource_type);
         }
     } else if (task.type == 'withdraw') {
         if ('amount' in task.details) {
-            task.executed_return_value = creep.withdraw(task.details.target, task.details.resource_type, task.details.amount);
+            task.executed_return_value = creep.withdraw(utilities.get_object_by_universal_id(task.details.target), task.details.resource_type, task.details.amount);
         } else {
-            task.executed_return_value = creep.withdraw(task.details.target, task.details.resource_type);
+            task.executed_return_value = creep.withdraw(utilities.get_object_by_universal_id(task.details.target), task.details.resource_type);
         }
     } else if (task.type == 'upgrade_controller') {
-        task.executed_return_value = creep.upgrade_controller(task.details.target);
+        task.executed_return_value = creep.upgrade_controller(utilities.get_object_by_universal_id(task.details.target));
     } else {
         task.executed_return_value = 99;
     }
@@ -353,7 +393,11 @@ Spawn.prototype.execute_task = function (task) {
     console.log(task);
     if (task.type == 'spawnCreep') {
         console.log('spawn is producing creep on tick ' + task.tick);
+        task.execution_output = 'creating body ' + task.details.body + ' with energy ' + spawn.store.getUsedCapacity(RESOURCE_ENERGY);
         task.executed_return_value = spawn.spawnCreep(task.details.body, task.details.name);
+    } else if (task.type == 'wait') {
+        console.log('spawn is waiting')
+        task.executed_return_value = 99;
     } else {
         console.log('spawn is executing unknown task');
         task.executed_return_value = 99;
